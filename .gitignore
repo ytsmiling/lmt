@@ -99,3 +99,11 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# pycharm
+# Thank you for JetBrains for providing academic liscence.
+.idea/
+
+# result directory
+result/
+dataset/
