@@ -1,7 +1,7 @@
 # LMT
 Public code for a paper ["Lipschitz-Margin Training:
 Scalable Certification of Perturbation Invariance
-for Deep Neural Networks."]()
+for Deep Neural Networks."](https://arxiv.org/abs/1802.04034)
 
 Dependent library:
 * [Numpy](https://github.com/numpy/numpy)
@@ -35,4 +35,4 @@ python3 train.py result/config/parseval_svhn/default-00 config/attack/deep_fool.
 Y. Tsuzuku, I. Sato, M. Sugiyama:
 Lipschitz-Margin Training:
 Scalable Certification of Perturbation Invariance for Deep Neural Networks,
-(2018), [url](), [bibtex]()
+(2018), [url](https://arxiv.org/abs/1802.04034), [bibtex](lmt_bibtex.txt)

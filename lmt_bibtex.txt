@@ -1,0 +1,7 @@
+@ARTICLE{lmt_arxiv,
+    author  = "{Tsuzuku, Yusuke and Sato, Issei and Sugiyama, Masashi}",
+    title   = "{Lipschitz-Margin Training: Scalable Certification of Perturbation Invariance for Deep Neural Networks}",
+    journal = {CoRR},
+    volume  = {abs/1802.04034},
+    year    = 2018
+}
