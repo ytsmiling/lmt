@@ -3,9 +3,7 @@ def register_power_iter(param):
 
 
 class PowerIteration:
-    """Only the output layer is regularized.
-
-    """
+    """Support power iteration using grads"""
 
     name = 'PowerIteration'
     call_for_each_param = True
