@@ -1,6 +1,10 @@
 import numpy as np
 import chainer
-from src.function import batch_normalization
+import chainer.functions as F
+from src.function.normalize import normalize
+from src.function.perturb import perturb
+from src.function.l2_norm import l2_norm
+from src.hook.power_iteration import register_power_iter
 
 
 class BatchNormalization(chainer.link.Link):
@@ -20,23 +24,47 @@ class BatchNormalization(chainer.link.Link):
         with self.init_scope():
             self.gamma = chainer.Parameter(np.ones((size,), np.float32))
             self.beta = chainer.Parameter(np.zeros((size,), np.float32))
+            u = np.random.normal(size=size).astype(np.float32)
+            with self.init_scope():
+                self.u = chainer.Parameter(u)
+                register_power_iter(self.u)
 
     def __call__(self, x):
         x, t, l = x
-        # ensure gamma >= 0
-        gamma = chainer.functions.absolute(self.gamma)
-        beta = self.beta
+
+        reshape = (1, x.shape[1]) + (1,) * (x.ndim - 2)
 
         if chainer.config.train:
-            func = batch_normalization.BatchNormalizationFunction(
-                self.eps, self.avg_mean, self.avg_var, self.decay)
-            x, lipschitz = func(x, gamma, beta)
-
-            self.avg_mean[:] = func.running_mean
-            self.avg_var[:] = func.running_var
+            # batch norm
+            mean = F.mean(x, axis=(0,) + tuple(range(2, x.ndim)))
+            x = x - F.broadcast_to(
+                F.reshape(mean, reshape),
+                x.shape)
+            var = F.mean(x ** 2, axis=(0,) + tuple(range(2, x.ndim)))
+            m = x.size // self.gamma.size
+            adjust = m / max(m - 1., 1.)  # unbiased estimation
+            self.avg_mean *= self.decay
+            self.avg_mean += (1 - self.decay) * mean.array
+            self.avg_var *= self.decay
+            self.avg_var += (1 - self.decay) * adjust * var.array
         else:
-            mean = chainer.variable.Variable(self.avg_mean)
-            var = chainer.variable.Variable(self.avg_var)
-            x, lipschitz = batch_normalization.fixed_batch_normalization(
-                x, gamma, beta, mean, var, self.eps)
-        return x, t, l * lipschitz
+            mean = self.avg_mean
+            var = self.avg_var
+            x = x - F.broadcast_to(F.reshape(mean, reshape), x.shape)
+
+        z0 = F.identity(self.gamma) / F.sqrt(var + self.eps)
+        z = F.reshape(z0, reshape)
+        x = x * F.broadcast_to(z, x.shape) + F.broadcast_to(
+            F.reshape(self.beta, reshape), x.shape)
+
+        # calculate Lipschitz constant
+        if getattr(chainer.config, 'lmt', False):
+            if getattr(chainer.config, 'exact', False):
+                l = l * F.reshape(F.max(F.absolute(z0)), (1,))
+            else:
+                normalize(self.u.array)
+                perturb(self.u.array, 1e-2, self.xp)
+                u = self.u * z0
+                l = l * l2_norm(u)
+
+        return x, t, l

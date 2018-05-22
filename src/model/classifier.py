@@ -13,7 +13,7 @@ class LMTraining(link.Chain):
 
     compute_accuracy = True
 
-    def __init__(self, predictor, preprocess, c=.0,
+    def __init__(self, predictor, preprocess, c=.0, attacker=None,
                  lossfun=softmax_cross_entropy.softmax_cross_entropy,
                  accfun=accuracy.accuracy):
         super(LMTraining, self).__init__()
@@ -23,6 +23,7 @@ class LMTraining(link.Chain):
         self.y = None
         self.loss = None
         self.accuracy = None
+        self.attacker = attacker
 
         with self.init_scope():
             self.preprocess = preprocess
@@ -31,13 +32,14 @@ class LMTraining(link.Chain):
     def __call__(self, *args):
 
         assert len(args) == 2
-        x = args[0]
-        t = args[1]
+        x, t = args
         self.y = None
         self.loss = None
         self.accuracy = None
         if chainer.config.train:
             x = self.preprocess.augment(x)
+            if self.attacker is not None:
+                x, t = self.attacker(x, t)
             self.y, _, _ = self.predictor(self.preprocess((x, t, self.c)))
         else:
             with chainer.using_config('lmt', False):

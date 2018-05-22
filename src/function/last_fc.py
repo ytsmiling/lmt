@@ -32,7 +32,13 @@ class LmtFc(chainer.function.Function):
 
         l = l * self.w_norm
         if xp == np:
-            raise NotImplementedError()
+            xt = x[list(range(t.size)), t].reshape((t.size, 1))
+            pred_margin = xt - x
+            factor = np.where(pred_margin >= 0,
+                              np.where(pred_margin >= l, 1, pred_margin / (l + 1e-20)),
+                              0)
+            self.factor = np.amin(factor, axis=1, keepdims=True)
+            y = x + factor * l
         else:
             # we need output corresponding to the target class
             # because we scale addition corresponding to the output margin
@@ -59,6 +65,14 @@ class LmtFc(chainer.function.Function):
                 """,
                 'last_fc_forward_2'
             )(x, l, self.factor)
+            # y = chainer.cuda.cupy.ElementwiseKernel(
+            #     'T x, T l',
+            #     'T y',
+            #     """
+            #     y = x + l;
+            #     """,
+            #     'last_fc_forward_2'
+            # )(x, l)
         return y, l
 
     def backward(self, inputs, grad_outputs):

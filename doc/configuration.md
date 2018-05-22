@@ -4,7 +4,7 @@ Configuration files manage hyperparameters of trainings.
 It must provide at least the following information:
 * batchsize,
 * epoch,
-* [dataset](#dataset) (both train / validation),
+* [dataset](#dataset) (both train / test),
 * [model](#model) (network structure),
 * optimizer (optimization algorithm like Adam),
 * [mode](#mode) (list of configuration mode).
@@ -19,14 +19,12 @@ Sample configuration files can be found under config/ directory.
 ```text
 |- attack/
 |  - configuration files for attack methods
-|- lower_bounds_mnist/
-|  - experiment 7.1
-|- lower_bounds_cifar10/
-|  - experiment 7.1
 |- outer_polytope/
-|  - experiment 7.2
+|  - experiment 6.1
 |- parseval_svhn/
-|  - experiment 7.3
+|  - experiment 6.2
+|- svhn_avg/
+|  - experiment 6.2 (average-pooling ver.)
 ```
 
 # Configuration of attack methods
@@ -58,10 +56,9 @@ Models are provided under src/model/ directory.
 Mode is a list of configurations.
 We provide the folloing modes:
 * default (usual training)
-* lmt (train using lmt)
-* lmt_fc (train using lmt++. activated only when lmt is also specified)
+* lmt (train using lmt (Prop.1 ver.))
+* lmt_fc (train using lmt (Prop.2 ver.) activated only when lmt is also specified)
 * parseval (Parseval networks)
-* lipschitz_regularization (do the Lipschitz regularization)
 
 <a id="hook"></a>
 ## Hook

@@ -1,6 +1,6 @@
 import chainer
-from src.model.wide_resnet_new import WideResNet
 from src.dataset.svhn import svhn
+from src.model.wide_resnet_avg import WideResNet
 from src.preprocess.preprocess_svhn import PreprocessSVHN
 from src.extension.learning_rate_scheduler import LearningRateScheduler
 from src.extension.learning_rate_scheduler import ExponentialSchedule

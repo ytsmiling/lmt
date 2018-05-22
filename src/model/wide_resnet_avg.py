@@ -17,25 +17,36 @@ class BasicBlock(chainer.Chain):
 
         self.reduce = reduce
         self.drop = drop
+        self.stride = stride
         with self.init_scope():
-            self.shortcut = Convolution2D(
-                in_channel, out_channel, 1, stride, 0, initialW=initialW, nobias=True
-            ) if reduce else (lambda x: x)
+            if self.reduce:
+                self.shortcut = Convolution2D(
+                    in_channel, out_channel, 1, 1, 0, initialW=initialW,
+                    nobias=True
+                )
             self.conv1 = Convolution2DBN(
-                in_channel, out_channel, 3, stride, 1, initialW=initialW, nobias=True)
+                in_channel, out_channel, 3, stride, 1, initialW=initialW,
+                nobias=True)
             self.conv2 = Convolution2D(
-                out_channel, out_channel, 3, 1, 1, initialW=initialW, nobias=True)
-            self.bn1 = BatchNormalization(in_channel)
+                out_channel, out_channel, 3, 1, 1, initialW=initialW,
+                nobias=True)
+            self.bn = BatchNormalization(out_channel)
             self.addition = Addition()
 
-    def __call__(self, x):
-        h = relu(self.bn1(x))
+    def __call__(self, x, bnx):
         if self.reduce:
-            x = h
-        h = dropout(relu(self.conv1(h)), ratio=self.drop)
+            if self.stride > 1:
+                assert self.stride == 2
+                h_s = average_pooling_2d(bnx, ksize=2, stride=2, pad=0)
+            else:
+                h_s = bnx
+            h_s = self.shortcut(h_s)
+        else:
+            h_s = x
+        h = dropout(relu(self.conv1(bnx)), ratio=self.drop)
         h = self.conv2(h)
-        h_s = self.shortcut(x)
-        return self.addition(h, h_s)
+        h = self.addition(h, h_s)
+        return h, relu(self.bn(h))
 
 
 class Block(chainer.Chain):
@@ -45,16 +56,17 @@ class Block(chainer.Chain):
         with self.init_scope():
             reduce = True
             for i in range(n):
-                setattr(self, 'block{}'.format(i), BasicBlock(in_channel, out_channel, stride,
-                                                              reduce, drop))
+                setattr(self, 'block{}'.format(i),
+                        BasicBlock(in_channel, out_channel, stride,
+                                   reduce, drop))
                 reduce = False
                 stride = 1
                 in_channel = out_channel
 
-    def __call__(self, x):
+    def __call__(self, x, bnx):
         for i in range(self.n):
-            x = getattr(self, 'block{}'.format(i))(x)
-        return x
+            x, bnx = getattr(self, 'block{}'.format(i))(x, bnx)
+        return x, bnx
 
 
 class WideResNet(chainer.Chain):
@@ -75,22 +87,21 @@ class WideResNet(chainer.Chain):
         """
         super(WideResNet, self).__init__()
         if n_layer < 10 or (n_layer - 4) % 6:
-            raise ValueError('n_layer must be 6n + 4 for a some positive integer n.')
+            raise ValueError(
+                'n_layer must be 6n + 4 for a some positive integer n.')
         n = (n_layer - 4) // 6
         with self.init_scope():
-            self.conv1 = Convolution2D(
+            self.conv1 = Convolution2DBN(
                 3, 16, 3, 1, 1, initialW=initializers.HeNormal(), nobias=True)
             self.conv2 = Block(n, 16, 16 * k, stride=1, drop=drop)
             self.conv3 = Block(n, 16 * k, 32 * k, drop=drop)
             self.conv4 = Block(n, 32 * k, 64 * k, drop=drop)
-            self.bn = BatchNormalization(64 * k)
             self.fc = LastLinear(64 * k, n_class)
 
     def __call__(self, x):
-        h = self.conv1(x)
-        h = self.conv2(h)
-        h = self.conv3(h)
-        h = self.conv4(h)
-        h = relu(self.bn(h))
-        h = average_pooling_2d(h, 8, stride=1)
+        bnh = self.conv1(x)
+        h, bnh = self.conv2(None, bnh)
+        h, bnh = self.conv3(h, bnh)
+        h, bnh = self.conv4(h, bnh)
+        h = average_pooling_2d(bnh, 8, stride=1)
         return self.fc(h)

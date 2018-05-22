@@ -125,7 +125,9 @@ def main():
     val_interval = (1, 'epoch')
     evaluator = extensions.Evaluator(val_iter, model, device=gpu)
     trainer.extend(evaluator, trigger=val_interval, name='val')
+    trainer.extend(extensions.dump_graph('main/loss'))
 
+    #
     # additional extensions
     # learning rate scheduling is set here
     for extension, trigger in getattr(config, 'extension', []):

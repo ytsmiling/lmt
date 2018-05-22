@@ -7,10 +7,15 @@ class AttackerBase(chainer.Link):
         super(AttackerBase, self).__init__()
         with self.init_scope():
             self.model = model
+        self.l2_history = list()
+
+    def register_model(self, model):
+        with self.init_scope():
+            self.model = model
 
     def __call__(self, image, label):
         image = self.craft(image, label)
-        return self.model(image, label)
+        return image, label
 
     def predict(self, image, label, backprop=True):
         with chainer.using_config('train', False):

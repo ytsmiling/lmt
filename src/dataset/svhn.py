@@ -26,11 +26,13 @@ def svhn_small():
     _get_svhn()
     dir_name = os.path.join('dataset', 'svhn')
     train = scipy.io.loadmat(os.path.join(dir_name, 'train.mat'))
-    train = TupleDataset(train['X'].transpose(3, 2, 0, 1).astype(np.float32),
-                         train['y'].flatten().astype(np.int32) - 1)
+    train = TupleDataset(
+        train['X'].transpose(3, 2, 0, 1).astype(np.float32) / 255,
+        train['y'].flatten().astype(np.int32) - 1)
     test = scipy.io.loadmat(os.path.join(dir_name, 'test.mat'))
-    test = TupleDataset(test['X'].transpose(3, 2, 0, 1).astype(np.float32),
-                        test['y'].flatten().astype(np.int32) - 1)
+    test = TupleDataset(
+        test['X'].transpose(3, 2, 0, 1).astype(np.float32) / 255,
+        test['y'].flatten().astype(np.int32) - 1)
     return train, test
 
 
@@ -46,12 +48,14 @@ def svhn():
     train = scipy.io.loadmat(os.path.join(dir_name, 'train.mat'))
     train2 = scipy.io.loadmat(os.path.join(dir_name, 'extra.mat'))
     train_img = np.concatenate(
-        [train['X'].transpose(3, 2, 0, 1).astype(np.float32), train2['X'].transpose(3, 2, 0, 1)[:-10000].astype(
-            np.float32)])
+        [train['X'].transpose(3, 2, 0, 1).astype(np.float32),
+         train2['X'].transpose(3, 2, 0, 1).astype(np.float32)]) / 255
     train_label = np.concatenate(
-        [train['y'].flatten().astype(np.int32) - 1, train2['y'].flatten()[:-10000].astype(np.int32) - 1])
+        [train['y'].flatten().astype(np.int32) - 1,
+         train2['y'].flatten().astype(np.int32) - 1])
     train = TupleDataset(train_img, train_label)
     test = scipy.io.loadmat(os.path.join(dir_name, 'test.mat'))
-    test = TupleDataset(test['X'].transpose(3, 2, 0, 1).astype(np.float32),
-                        test['y'].flatten().astype(np.int32) - 1)
+    test = TupleDataset(
+        test['X'].transpose(3, 2, 0, 1).astype(np.float32) / 255,
+        test['y'].flatten().astype(np.int32) - 1)
     return train, test

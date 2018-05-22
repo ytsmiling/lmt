@@ -26,7 +26,8 @@ def parseval(W, beta, ratio):
     else:
         index = np.random.random(W.shape[0]) < ratio
         w = W.data.reshape((W.shape[0], -1))
-        w[index] = (1 + beta) * w[index] - beta * w[index].dot(w[index].T).dot(w[index])
+        w[index] = (1 + beta) * w[index] - beta * w[index].dot(w[index].T).dot(
+            w[index])
         W.data[:] = w.reshape(W.shape)
 
 
@@ -50,5 +51,7 @@ class Parseval(extension.Extension):
         for name, param in target.namedparams():
             if getattr(param, 'parseval_alpha', False):
                 threshold(param.data)
-            elif param.ndim >= 2 and not getattr(param, 'last_fc', False):
+            elif (getattr(param, 'convolutionW', False) or
+                  (getattr(param, 'linearW', False) and
+                   not getattr(param, 'last_fc', False))):
                 parseval(param, self.beta, self.ratio)

@@ -3,11 +3,8 @@ Public code for a paper ["Lipschitz-Margin Training:
 Scalable Certification of Perturbation Invariance
 for Deep Neural Networks."](https://arxiv.org/abs/1802.04034)
 
-Dependent library:
-* [Numpy](https://github.com/numpy/numpy)
-* [Scipy](https://github.com/scipy/scipy)
-* [Cupy](https://github.com/cupy/cupy)
-* [Chainer](https://github.com/chainer/chainer)
+###update:
+Pre-print and code are updated to version 2 (2018/5/23).
 
 How to train:
 ```commandline
@@ -24,11 +21,14 @@ How to evaluate with attacks:
 ```commandline
 python3 evaluate.py (result-dir-of-trained-network) (attack-configuration).py
 ```
+This script calculates each value in inequality (5) in Sec.6
+and create inequality-(attack_name).npy under a specified result directory.
+
 [what is the result directory?](doc/result_dir.md)
 
 example:
 ```commandline
-python3 train.py result/config/parseval_svhn/default-00 config/attack/deep_fool.py
+python3 evaluate.py result/config/parseval_svhn/default-00 config/attack/cw_100_1.py
 ```
 
 # Reference

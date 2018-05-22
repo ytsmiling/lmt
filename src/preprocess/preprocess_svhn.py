@@ -13,4 +13,4 @@ class PreprocessSVHN(chainer.link.Chain):
         if isinstance(l, int) or isinstance(l, float):
             xp = chainer.cuda.get_array_module(x)
             l = xp.array([l], dtype=xp.float32)
-        return x / 255, t, l / 255
+        return x, t, l
