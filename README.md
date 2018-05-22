@@ -3,8 +3,7 @@ Public code for a paper ["Lipschitz-Margin Training:
 Scalable Certification of Perturbation Invariance
 for Deep Neural Networks."](https://arxiv.org/abs/1802.04034)
 
-### update:
-Pre-print and code were updated to version 2 (2018/5/23).
+### update: Pre-print and code were updated to version 2 (2018/5/23).
 
 How to train:
 ```commandline
