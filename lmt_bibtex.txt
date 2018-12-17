@@ -1,7 +1,10 @@
-@ARTICLE{lmt_arxiv,
-    author  = "{Tsuzuku, Yusuke and Sato, Issei and Sugiyama, Masashi}",
-    title   = "{Lipschitz-Margin Training: Scalable Certification of Perturbation Invariance for Deep Neural Networks}",
-    journal = {CoRR},
-    volume  = {abs/1802.04034},
-    year    = 2018
+@incollection{NIPS2018_7889,
+  title = "{Lipschitz-Margin Training: Scalable Certification of Perturbation Invariance for Deep Neural Networks}",
+  author = {Tsuzuku, Yusuke and Sato, Issei and Sugiyama, Masashi},
+  booktitle = {Advances in Neural Information Processing Systems 31},
+  editor = {S. Bengio and H. Wallach and H. Larochelle and K. Grauman and N. Cesa-Bianchi and R. Garnett},
+  pages = {6542--6551},
+  year = {2018},
+  publisher = {Curran Associates, Inc.},
+  url = {http://papers.nips.cc/paper/7889-lipschitz-margin-training-scalable-certification-of-perturbation-invariance-for-deep-neural-networks.pdf}
 }
