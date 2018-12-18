@@ -24,13 +24,14 @@ else:
 
 def conv_spectral_norm_exact(kernel, shape, stride, pad):
     xp = get_array_module(kernel)
+    kernel = kernel.astype(xp.float64)
     shape = (128,) + shape[1:]
-    x = xp.random.normal(size=shape).astype(xp.float32)
+    x = xp.random.normal(size=shape).astype(xp.float64)
     normalize(x, (1, 2, 3))
     prev = None
     eps = 1e20
     with chainer.no_backprop_mode():
-        for i in range(500):
+        for i in range(5000):
             x = convolution_2d(x, kernel, stride=stride, pad=pad).array
             x = deconvolution_2d(x, kernel, stride=stride, pad=pad).array
             norm = normalize(x, (1, 2, 3))
